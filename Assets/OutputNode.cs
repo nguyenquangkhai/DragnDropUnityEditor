@@ -35,8 +35,6 @@ public class OutputNode : BaseNode
         {
             inputNodeRect = GUILayoutUtility.GetLastRect();
         }
-
-        GUILayout.Label("Result :" + result);
     }
 
     public override void DrawCurves()

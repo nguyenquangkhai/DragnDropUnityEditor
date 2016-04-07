@@ -1,20 +1,20 @@
 ﻿using UnityEngine;
-using System.Collections;
 using UnityEditor;
+using System.Collections;
 using System.Collections.Generic;
-using System;
 
-public class NodeEditor : EditorWindow {
-    private List<BaseNode> windows = new List<BaseNode>();
+public class MapEditor : EditorWindow
+{
+    private List<MapInfo> windows = new List<MapInfo>();
 
     private Vector2 mousePos;
-    private BaseNode selectedNode;
+    private MapInfo selectedMap;
     private bool makeTransitionMode = false;
 
-    [MenuItem("Windows/Node Editor")]
+    [MenuItem("Windows/Map Editor")]
     static void ShowEditor()
     {
-        EditorWindow.GetWindow<NodeEditor>();
+        MapEditor editor = EditorWindow.GetWindow<MapEditor>();
     }
 
     void OnGUI()
@@ -22,14 +22,14 @@ public class NodeEditor : EditorWindow {
         Event e = Event.current;
         mousePos = e.mousePosition;
 
-        if(e.button == 1 && !makeTransitionMode)
+        if (e.button == 1 && !makeTransitionMode)
         {
-            if(e.type == EventType.MouseDown)
+            if (e.type == EventType.MouseDown)
             {
                 bool clickedOnWindow = false;
                 int selectedIndex = 1;
 
-                for(int i =0; i < windows.Count; ++i)
+                for (int i = 0; i < windows.Count; ++i)
                 {
                     if (windows[i].windowRect.Contains(mousePos))
                     {
@@ -42,11 +42,7 @@ public class NodeEditor : EditorWindow {
                 if (!clickedOnWindow)
                 {
                     GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent("Add Input Node"), false, ContextCallback, "inputNode");
-                    menu.AddItem(new GUIContent("Add Output Node"), false, ContextCallback, "outputNode");
-                    menu.AddItem(new GUIContent("Add Comparison Node"), false, ContextCallback, "compNode");
-                    menu.AddItem(new GUIContent("Add Calculation Node"), false, ContextCallback, "calNode");
-
+                    menu.AddItem(new GUIContent("Add Map"), false, ContextCallback, "addMap");
                     menu.ShowAsContext();
                     e.Use();
                 }
@@ -62,7 +58,8 @@ public class NodeEditor : EditorWindow {
                 }
             }
         }
-        else if(e.button == 0 && e.type == EventType.MouseDown && makeTransitionMode)
+
+        else if (e.button == 0 && e.type == EventType.MouseDown && makeTransitionMode)
         {
             bool clickedOnWindow = false;
             int selectedIndex = 1;
@@ -77,21 +74,22 @@ public class NodeEditor : EditorWindow {
                 }
             }
 
-            if(clickedOnWindow && !windows[selectedIndex].Equals(selectedNode))
+            if (clickedOnWindow && !windows[selectedIndex].Equals(selectedMap))
             {
-                windows[selectedIndex].SetInput((BaseInputNode)selectedNode, mousePos);
+                windows[selectedIndex].SetInput(selectedMap, mousePos);
                 makeTransitionMode = false;
-                selectedNode = null;
+                selectedMap = null;
             }
 
             if (!clickedOnWindow)
             {
                 makeTransitionMode = false;
-                selectedNode = null;
+                selectedMap = null;
             }
 
             e.Use();
-        }else if(e.button == 0 && e.type == EventType.MouseDown && !makeTransitionMode)
+        }
+        else if (e.button == 0 && e.type == EventType.MouseDown && !makeTransitionMode)
         {
             bool clickedOnWindow = false;
             int selectedIndex = 1;
@@ -108,32 +106,32 @@ public class NodeEditor : EditorWindow {
 
             if (clickedOnWindow)
             {
-                BaseInputNode nodeToChange = windows[selectedIndex].ClickedOnInput(mousePos);
+                MapInfo mapToChange = windows[selectedIndex].ClickedOnInput(mousePos);
 
-                if(nodeToChange != null)
+                if (mapToChange != null)
                 {
-                    selectedNode = nodeToChange;
+                    selectedMap = mapToChange;
                     makeTransitionMode = true;
                 }
             }
         }
 
-        if (makeTransitionMode && selectedNode != null)
+        if (makeTransitionMode && selectedMap != null)
         {
             Rect mouseRect = new Rect(e.mousePosition.x, e.mousePosition.y, 10, 10);
 
-            DrawNodeCurve(selectedNode.windowRect, mouseRect);
+            DrawNodeCurve(selectedMap.windowRect, mouseRect);
 
             Repaint();
         }
 
-        foreach(BaseNode n in windows)
+        foreach (MapInfo n in windows)
         {
             n.DrawCurves();
         }
 
         BeginWindows();
-        for(int i = 0; i<windows.Count; ++i)
+        for (int i = 0; i < windows.Count; ++i)
         {
             windows[i].windowRect = GUI.Window(i, windows[i].windowRect, DrawNodeWindow, windows[i].windowTitle);
         }
@@ -151,32 +149,14 @@ public class NodeEditor : EditorWindow {
     {
         string clb = obj.ToString();
 
-        if (clb.Equals("inputNode"))
+        if (clb.Equals("addMap"))
         {
-            InputNode inputNode = new InputNode();
-            inputNode.windowRect = new Rect(mousePos.x, mousePos.y, 200, 150);
+            MapInfo inputMap = ScriptableObject.CreateInstance<MapInfo>();
+            inputMap.windowRect = new Rect(mousePos.x, mousePos.y, 200, 150);
 
-            windows.Add(inputNode);
-        }else if (clb.Equals("outputNode"))
-        {
-            OutputNode outputNode = new OutputNode();
-            outputNode.windowRect = new Rect(mousePos.x, mousePos.y, 200, 150);
-
-            windows.Add(outputNode);
-        }else if (clb.Equals("compNode"))
-        {
-            ComparisonNode compNode = new ComparisonNode();
-            compNode.windowRect = new Rect(mousePos.x, mousePos.y, 200, 150);
-
-            windows.Add(compNode);
+            windows.Add(inputMap);
         }
-        else if (clb.Equals("calNode"))
-        {
-            CalcNode calcNode = new CalcNode();
-            calcNode.windowRect = new Rect(mousePos.x, mousePos.y, 200, 150);
-
-            windows.Add(calcNode);
-        }else if (clb.Equals("makeTransition"))
+        else if (clb.Equals("makeTransition"))
         {
             bool clickedOnWindow = false;
             int selectedIndex = 1;
@@ -193,7 +173,7 @@ public class NodeEditor : EditorWindow {
 
             if (clickedOnWindow)
             {
-                selectedNode = windows[selectedIndex];
+                selectedMap = windows[selectedIndex];
                 makeTransitionMode = true;
             }
         }
@@ -214,11 +194,11 @@ public class NodeEditor : EditorWindow {
 
             if (clickedOnWindow)
             {
-                BaseNode selNode = windows[selectedIndex];
+                MapInfo selNode = windows[selectedIndex];
                 windows.RemoveAt(selectedIndex);
-                foreach(BaseNode n in windows)
+                foreach (MapInfo n in windows)
                 {
-                    n.NodeDeleted(selNode);
+                    n.MapDeleted(selNode);
                 }
             }
         }
@@ -226,19 +206,19 @@ public class NodeEditor : EditorWindow {
 
     public static void DrawNodeCurve(Rect start, Rect end)
     {
-        Vector3 startPos = new Vector3(start.x + start.width/2, start.y + start.height/ 2, 0);
-        Vector3 endPos = new Vector3(end.x + end.width / 2, end.y + end.height / 2, 0);
+        Vector3 startPos = new Vector3(start.x + start.width, start.y + start.height / 2, 0);
+        Vector3 endPos = new Vector3(end.x, end.y + end.height / 2, 0);
 
         Vector3 startTan = startPos + Vector3.right * 50;
         Vector3 endTan = endPos + Vector3.left * 50;
 
         Color shadowCol = new Color(0, 0, 0, .06f);
 
-        for(int i= 0; i<3; ++i)
+        for (int i = 0; i < 3; ++i)
         {
             Handles.DrawBezier(startPos, endPos, startTan, endTan, shadowCol, null, (i + 1) * 5);
         }
 
-        Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.black, null, 1);
-    }	
+        Handles.DrawBezier(startPos, endPos, startTan, endTan, Color.red, null, 1);
+    }
 }

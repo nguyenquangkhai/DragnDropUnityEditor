@@ -25,21 +25,23 @@ public class InputNode : BaseInputNode {
     {
         base.DrawWindow();
 
-        inputType = (InputType)EditorGUILayout.EnumPopup("Input Type", inputType);
+        inputType = (InputType)EditorGUILayout.EnumPopup("Input Type: ", inputType);
 
         if( inputType == InputType.Number)
         {
-            inputValue = EditorGUILayout.TextField("Value", inputValue);
+            inputValue = EditorGUILayout.TextField("Value: ", inputValue);
         }
         else
         {
-            randomFrom = EditorGUILayout.TextField("From", randomFrom);
-            randomTo = EditorGUILayout.TextField("To", randomTo);
+            randomFrom = EditorGUILayout.TextField("From: ", randomFrom);
+            randomTo = EditorGUILayout.TextField("To: ", randomTo);
 
             if(GUILayout.Button("Calculate Random"))
             {
                 calculateRandom();
             }
+
+            inputValue = EditorGUILayout.TextField("Value: ", inputValue);
         }
     }
 

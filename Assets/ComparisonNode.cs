@@ -49,6 +49,8 @@ public class ComparisonNode : BaseInputNode {
             input1Rect = GUILayoutUtility.GetLastRect();
         }
 
+        GUILayout.Space(10);
+
         string input2Title = "None";
 
         if (input2)
